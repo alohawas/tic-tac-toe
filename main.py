@@ -30,44 +30,44 @@ def player_move(i, buttons, board, current_player):
         update_board(buttons, board)
         if check_winner(board, current_player):
             messagebox.showinfo("Game Over", f"Player {current_player} wins!")
-            reset_game(buttons, board)
+            reset_game(buttons, board, current_player)
         elif is_draw(board):
             messagebox.showinfo("Game Over", "It's a draw!")
-            reset_game(buttons, board)
+            reset_game(buttons, board, current_player)
         else:
             current_player.set('O' if current_player.get() == 'X' else 'X')
             if current_player.get() == 'O':  # AI turn
-                ai_move(buttons, board)
+                ai_move(buttons, board, current_player)
 
 # Fungsi untuk gerakan AI (komputer)
-def ai_move(buttons, board):
+def ai_move(buttons, board, current_player):
     available_moves = [i for i, x in enumerate(board) if x not in ['X', 'O']]
     move = random.choice(available_moves)
     board[move] = 'O'
     update_board(buttons, board)
     if check_winner(board, 'O'):
         messagebox.showinfo("Game Over", "Player O (AI) wins!")
-        reset_game(buttons, board)
+        reset_game(buttons, board, current_player)
     elif is_draw(board):
         messagebox.showinfo("Game Over", "It's a draw!")
-        reset_game(buttons, board)
+        reset_game(buttons, board, current_player)
     else:
         current_player.set('X')
 
 # Fungsi untuk mereset permainan
-def reset_game(buttons, board):
+def reset_game(buttons, board, current_player):
     for button in buttons:
         button.config(text="", state=tk.NORMAL)
     for i in range(9):
         board[i] = str(i + 1)
-    current_player.set('X')
+    current_player.set('X')  # Set kembali pemain pertama ke 'X'
 
 # Membuat GUI menggunakan Tkinter
 def main():
     root = tk.Tk()
     root.title("Tic-Tac-Toe")
     
-    current_player = tk.StringVar(value='X')
+    current_player = tk.StringVar(value='X')  # Menyimpan pemain saat ini ('X' atau 'O')
     
     board = [str(i+1) for i in range(9)]  # Papan permainan
     buttons = []
@@ -79,7 +79,7 @@ def main():
         buttons.append(button)
     
     # Tombol reset
-    reset_button = tk.Button(root, text="Restart Game", command=lambda: reset_game(buttons, board), font=('Arial', 12))
+    reset_button = tk.Button(root, text="Restart Game", command=lambda: reset_game(buttons, board, current_player), font=('Arial', 12))
     reset_button.grid(row=3, column=0, columnspan=3, pady=10)
 
     root.mainloop()
