@@ -1,12 +1,8 @@
-def print_board(board):
-    print()
-    print(f"{board[0]} | {board[1]} | {board[2]}")
-    print("--+---+--")
-    print(f"{board[3]} | {board[4]} | {board[5]}")
-    print("--+---+--")
-    print(f"{board[6]} | {board[7]} | {board[8]}")
-    print()
+import tkinter as tk
+from tkinter import messagebox
+import random
 
+# Fungsi untuk memeriksa apakah pemain menang
 def check_winner(board, player):
     win_conditions = [
         (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Horizontal
@@ -18,40 +14,75 @@ def check_winner(board, player):
             return True
     return False
 
+# Fungsi untuk memeriksa apakah permainan seri
 def is_draw(board):
     return all(cell in ['X', 'O'] for cell in board)
 
-def main():
-    board = [str(i+1) for i in range(9)]
-    current_player = 'X'
+# Fungsi untuk mengupdate tampilan
+def update_board(buttons, board):
+    for i, button in enumerate(buttons):
+        button.config(text=board[i], state=tk.DISABLED if board[i] in ['X', 'O'] else tk.NORMAL)
 
-    while True:
-        print_board(board)
-        move = input(f"Player {current_player}, choose your move (1-9): ")
-
-        if not move.isdigit() or not (1 <= int(move) <= 9):
-            print("Invalid input. Please choose a number between 1 and 9.")
-            continue
-
-        move = int(move) - 1
-
-        if board[move] in ['X', 'O']:
-            print("Cell already taken. Choose another one.")
-            continue
-
-        board[move] = current_player
-
+# Fungsi untuk menangani klik tombol pemain
+def player_move(i, buttons, board, current_player):
+    if board[i] not in ['X', 'O']:
+        board[i] = current_player
+        update_board(buttons, board)
         if check_winner(board, current_player):
-            print_board(board)
-            print(f"Player {current_player} wins! 🎉")
-            break
+            messagebox.showinfo("Game Over", f"Player {current_player} wins!")
+            reset_game(buttons, board)
+        elif is_draw(board):
+            messagebox.showinfo("Game Over", "It's a draw!")
+            reset_game(buttons, board)
+        else:
+            current_player.set('O' if current_player.get() == 'X' else 'X')
+            if current_player.get() == 'O':  # AI turn
+                ai_move(buttons, board)
 
-        if is_draw(board):
-            print_board(board)
-            print("It's a draw!")
-            break
+# Fungsi untuk gerakan AI (komputer)
+def ai_move(buttons, board):
+    available_moves = [i for i, x in enumerate(board) if x not in ['X', 'O']]
+    move = random.choice(available_moves)
+    board[move] = 'O'
+    update_board(buttons, board)
+    if check_winner(board, 'O'):
+        messagebox.showinfo("Game Over", "Player O (AI) wins!")
+        reset_game(buttons, board)
+    elif is_draw(board):
+        messagebox.showinfo("Game Over", "It's a draw!")
+        reset_game(buttons, board)
+    else:
+        current_player.set('X')
 
-        current_player = 'O' if current_player == 'X' else 'X'
+# Fungsi untuk mereset permainan
+def reset_game(buttons, board):
+    for button in buttons:
+        button.config(text="", state=tk.NORMAL)
+    for i in range(9):
+        board[i] = str(i + 1)
+    current_player.set('X')
+
+# Membuat GUI menggunakan Tkinter
+def main():
+    root = tk.Tk()
+    root.title("Tic-Tac-Toe")
+    
+    current_player = tk.StringVar(value='X')
+    
+    board = [str(i+1) for i in range(9)]  # Papan permainan
+    buttons = []
+
+    for i in range(9):
+        button = tk.Button(root, text=board[i], width=10, height=3, font=('Arial', 20),
+                           command=lambda i=i: player_move(i, buttons, board, current_player.get()))
+        button.grid(row=i // 3, column=i % 3)
+        buttons.append(button)
+    
+    # Tombol reset
+    reset_button = tk.Button(root, text="Restart Game", command=lambda: reset_game(buttons, board), font=('Arial', 12))
+    reset_button.grid(row=3, column=0, columnspan=3, pady=10)
+
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
