@@ -82,7 +82,7 @@ cd tic-tac-toe
 ### Running the game
 
 ```bash
-python tic_tac_toe.py
+python tictactoe.py
 ```
 
 ## Technical Details 🔧
